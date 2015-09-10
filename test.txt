@@ -1,0 +1,3 @@
+
+("Foo Widget", 100.0, "test1", "test2")
+("Bar Widget", "hallo")
