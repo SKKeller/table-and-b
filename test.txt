@@ -6,10 +6,10 @@ CONSTANTS Excel
 PROPERTIES
 Excel : POW(TUPLETYPE) & /* Typing */
 Excel = { /* the Data */
-(Foo Widget, 100.0, test1, test2)
-(Bar Widget, 200.0)
+("Foo Widget", 100.0, "test1", "test2")
+("Bar Widget", 200.0)
  }
-Spalte 1 = %(x1,x2,x3).((x1,x2,x3):TUPLETYPE|x0)
-Spalte 2 = %(x1,x2,x3).((x1,x2,x3):TUPLETYPE|x1)
-Spalte 3 = %(x1,x2,x3).((x1,x2,x3):TUPLETYPE|x2)
-Spalte 4 = %(x1,x2,x3).((x1,x2,x3):TUPLETYPE|x3)
+Spalte 1 = %(x0,x1,x2,x3,x4).((x0,x1,x2,x3,x4):TUPLETYPE|x0)
+Spalte 2 = %(x0,x1,x2,x3,x4).((x0,x1,x2,x3,x4):TUPLETYPE|x1)
+Spalte 3 = %(x0,x1,x2,x3,x4).((x0,x1,x2,x3,x4):TUPLETYPE|x2)
+Spalte 4 = %(x0,x1,x2,x3,x4).((x0,x1,x2,x3,x4):TUPLETYPE|x3)
