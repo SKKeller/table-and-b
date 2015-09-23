@@ -60,7 +60,6 @@
   [rows]
   (reduce str (map row-as-tuple rows)))
 
-
 (defn get-cell
   "Gibt den Inhalt der n. Zelle Zeile row wieder"
   [n row]
@@ -106,7 +105,7 @@
   (rows-as-tuples (rest rows)) " }"))
 
 (defn generate-function
-  "erstellt das Grundgerüst der Projektionsfunction für Tuples"
+  "erstellt das Grundgerüst der projection function für Tuples"
   [n]
   (let [vars (reduce str (interpose ",x" (range 0 (inc n))))]
     (str " = %(x" vars ").((x" vars "):TUPLETYPE|x")))
@@ -135,51 +134,49 @@
       (tuple-properties rows) \newline
       (tuples-functions (first rows))))))
 
+(defn erstelle-zuordnung
+  "Erstellt eine Zuordnung vom Muster name1:wert1,name2:wert2..."
+  [namen werte]
+  (subs (reduce str (interleave (repeat ",") namen (repeat ":") werte )) 1))
+
 (defn record-data
   "Erstellt den Data-Teil der Recordversion"
-  [sheet]
-  (let [rows (row-seq sheet)
-        title (map read-cell(first rows))]
-    (loop [i 1 erg ""]
-     (if (= i (count rows))
-       erg
-       (recur (inc i) (str erg "rec(" (subs (reduce str (interleave (repeat ",") title (repeat ":") (map element (nth rows i)))) 1) ")" \newline))))))
-
-(defn generate-pow
-  "Erstellt den POW-Teil der Recordversion"
-  [sheet]
-  (let [typen (haupttypen sheet)
-        title (map read-cell(first (row-seq sheet)))]
-    (loop [i 0 erg ""]
-      (if (= i (count title))
-        (subs erg 1)
-        (recur (inc i) (str erg "," (nth title i) ":" (nth typen i)))))))
+  [rows titles]
+  (reduce str
+    (for [row rows]
+      (str "rec(" (erstelle-zuordnung titles (map element row)) ")" \newline))))
 
 (defn record-properties
   "Erstellt den Properties Teil für Records"
-  [sheet]
-  (str "PROPERTIES" \newline "Excel : POW(struct(" (generate-pow sheet) "))"))
+  [sheet titles]
+  (str "PROPERTIES" \newline "Excel : POW(struct(" (erstelle-zuordnung titles (haupttypen sheet)) "))"))
+
+(defn function-line
+  "Erstellt die Funktion für Variable var und Zuordnung pow"
+  [var pow i]
+  (str "&" \newline var " = %x" i ".(x" i ":struct(" pow ")|x" i "'" var ")" \newline))
 
 (defn record-functions
   "Erstellt die projection functions für die Recordversion"
-  [sheet]
-  (let [title (map read-cell(first (row-seq sheet)))]
+  [sheet titles]
+  (let [pow (erstelle-zuordnung titles (haupttypen sheet))]
     (loop [i 0 erg ""]
-      (if (= i (count title))
+      (if (= i (count titles))
         erg
-        (recur (inc i) (str erg "&" \newline (nth title i) " = %x" i ".(x" i ":struct(" (generate-pow sheet) ")|x" i "'" (nth title i) ")" \newline))))))
+        (recur (inc i) (str erg (function-line (nth titles i) pow i)))))))
 
 (defn erstelle-recordmachine
   "erstellt die Recordversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test1.txt"
   [sheet]
-  (let [rows (row-seq sheet)]
+  (let [rows (row-seq sheet)
+        titles (map read-cell(first (row-seq sheet)))]
     (spit "test1.txt"
     (str recanfang \newline
     (abstract-constants (first rows)) \newline
-    (record-properties sheet) \newline
+    (record-properties sheet titles) \newline
     "Excel = { /* the Data /*}" \newline
-    (record-data sheet)
-    (record-functions sheet)))))
+    (record-data (rest rows) titles)
+    (record-functions sheet titles) \newline))))
 
 (defn first-row [dateiname sheetname]
   (let [workbook (load-workbook (str dateiname))

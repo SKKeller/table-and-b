@@ -3,7 +3,8 @@ ABSTRACT_CONSTANTS Spalte 1, Spalte 2, Spalte 3, Spalte 4
 CONSTANTS Excel
 
 PROPERTIES
-Excel : POW(struct(Spalte 1:STRING,Spalte 2:STRING,Spalte 3:STRING,Spalte 4:STRING))Excel = { /* the Data /*}
+Excel : POW(struct(Spalte 1:STRING,Spalte 2:STRING,Spalte 3:STRING,Spalte 4:STRING))
+Excel = { /* the Data /*}
 rec(Spalte 1:"Foo Widget",Spalte 2:100.0,Spalte 3:"test1",Spalte 4:"test2")
 rec(Spalte 1:"Bar Widget",Spalte 2:200.0)
 &
@@ -14,3 +15,4 @@ Spalte 2 = %x1.(x1:struct(Spalte 1:STRING,Spalte 2:STRING,Spalte 3:STRING,Spalte
 Spalte 3 = %x2.(x2:struct(Spalte 1:STRING,Spalte 2:STRING,Spalte 3:STRING,Spalte 4:STRING)|x2'Spalte 3)
 &
 Spalte 4 = %x3.(x3:struct(Spalte 1:STRING,Spalte 2:STRING,Spalte 3:STRING,Spalte 4:STRING)|x3'Spalte 4)
+
