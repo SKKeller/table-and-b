@@ -1,6 +1,8 @@
 (ns table-to-b.core
   (:require [dk.ative.docjure.spreadsheet :as dj]
             [clojure.java.io :as io])
+  (:import de.be4.classicalb.core.parser.BParser
+           de.be4.classicalb.core.parser.exceptions.BException)
   (:gen-class))
 
 (defn -main
@@ -184,3 +186,9 @@
         rows (dj/row-seq sheet)]
     (dj/sheet-name (first (dj/sheet-seq workbook)))
     ))
+
+(defn valid-b-identifier? [string]
+  (try
+    (do  (BParser/parse (str "#FORMULA " string))
+         true)
+    (catch BException e false)))
