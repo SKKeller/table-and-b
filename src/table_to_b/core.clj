@@ -154,17 +154,15 @@
 
 (defn function-line
   "Erstellt die Funktion für Variable var und Zuordnung pow"
-  [var pow i]
-  (str "&" \newline var " = %x" i ".(x" i ":struct(" pow ")|x" i "'" var ")" \newline))
+  [pow var]
+  (let [x (gensym "x")]
+    (str "&" \newline var " = %" x ".(" x ":struct(" pow ")|" x "'" var ")" \newline)))
 
 (defn record-functions
   "Erstellt die projection functions für die Recordversion"
   [sheet titles]
   (let [pow (erstelle-zuordnung titles (haupttypen sheet))]
-    (loop [i 0 erg ""]
-      (if (= i (count titles))
-        erg
-        (recur (inc i) (str erg (function-line (nth titles i) pow i)))))))
+    (map (partial function-line pow) titles)))
 
 (defn erstelle-recordmachine
   "erstellt die Recordversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test1.txt"
