@@ -1,8 +1,7 @@
 (ns table-to-b.core
+  (:require [dk.ative.docjure.spreadsheet :as dj]
+            [clojure.java.io :as io])
   (:gen-class))
-
-(use 'dk.ative.docjure.spreadsheet)
-(use 'clojure.java.io)
 
 (defn -main
   "I don't do a whole lot ... yet."
@@ -11,11 +10,11 @@
 
 (def workbook
   "läd spreadsheet.xlsx"
-  (load-workbook "spreadsheet.xlsx"))
+  (dj/load-workbook "spreadsheet.xlsx"))
 
 (def s
   "tabelle Price List"
-  (select-sheet "Price List" workbook))
+  (dj/select-sheet "Price List" workbook))
 
 (def datatype
   "Zuordnung Datentypnr -> Bezeichnung"
@@ -68,7 +67,7 @@
 (defn types-of-nth-column
   "Gibt die Typen der Zellen der n. Spalte der Tabelle sheet als Zahlen wieder"
   [n sheet]
-  (map (comp get-type (partial get-cell n)) (row-seq sheet)))
+  (map (comp get-type (partial get-cell n)) (dj/row-seq sheet)))
 
 (defn haupttyp
   "Gibt den Namen der typen wieder, wenn er bei allen gleich ist,
@@ -81,7 +80,7 @@
 (defn anzahl-Reihen
   "Gibt Anzahl der Reihen der Tabellenseite wieder"
   [sheet]
-  (count (row-seq sheet)))
+  (count (dj/row-seq sheet)))
 
 (defn haupttypen
   "Gibt die Datentypen der Reihen der Tabelle als list wieder"
@@ -113,8 +112,8 @@
 (defn tuples-functions
   "erstellt die projection functions für die Tupleversion"
   [row]
-  (let [function (generate-function (count (map read-cell row)))]
-    (loop [i 0 cells (map read-cell row) erg ""]
+  (let [function (generate-function (count (map dj/read-cell row)))]
+    (loop [i 0 cells (map dj/read-cell row) erg ""]
       (if (empty? cells)
         erg
         (recur (inc i) (rest cells) (str erg (first cells) function i ")" \newline))))))
@@ -122,12 +121,12 @@
 (defn abstract-constants
   "erstellt den ABSTRACT_CONSTANTS-Teil"
   [row]
-  (str "ABSTRACT_CONSTANTS " (reduce str (interpose ", " (map read-cell row))) \newline "CONSTANTS Excel" \newline ))
+  (str "ABSTRACT_CONSTANTS " (reduce str (interpose ", " (map dj/read-cell row))) \newline "CONSTANTS Excel" \newline ))
 
 (defn erstelle-tuplemachine
   "erstellt die Tupleversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test.txt"
   [sheet]
-  (let [rows (row-seq sheet)]
+  (let [rows (dj/row-seq sheet)]
     (spit "test.txt"
       (str (dateibegin sheet)  \newline
       (abstract-constants (first rows)) \newline
@@ -168,20 +167,20 @@
 (defn erstelle-recordmachine
   "erstellt die Recordversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test1.txt"
   [sheet]
-  (let [rows (row-seq sheet)
-        titles (map read-cell(first (row-seq sheet)))]
+  (let [rows (dj/row-seq sheet)
+        titles (map dj/read-cell (first rows))]
     (spit "test1.txt"
-    (str recanfang \newline
-    (abstract-constants (first rows)) \newline
-    (record-properties sheet titles) \newline
+     (str recanfang \newline
+     (abstract-constants (first rows)) \newline
+     (record-properties sheet titles) \newline
     "Excel = { /* the Data /*}" \newline
     (record-data (rest rows) titles)
     (record-functions sheet titles) \newline))))
 
 (defn first-row [dateiname sheetname]
-  (let [workbook (load-workbook (str dateiname))
-        sheet (select-sheet (str sheetname) workbook)
-        columns (select-columns {:A :name, :B :price, :C :wert} sheet)
-        rows (row-seq sheet)]
-    (sheet-name (first (sheet-seq workbook)))
+  (let [workbook (dj/load-workbook (str dateiname))
+        sheet (dj/select-sheet (str sheetname) workbook)
+        columns (dj/select-columns {:A :name, :B :price, :C :wert} sheet)
+        rows (dj/row-seq sheet)]
+    (dj/sheet-name (first (dj/sheet-seq workbook)))
     ))
