@@ -1,13 +1,13 @@
 MACHINE ExcelTable_TupleVersion
-DEFINITIONS TUPLETYPE == (STRING*STRING*STRING*STRING)
+DEFINITIONS TUPLETYPE == (STRING*INTEGER*STRING*STRING)
 ABSTRACT_CONSTANTS Spalte 1, Spalte 2, Spalte 3, Spalte 4
 CONSTANTS Excel
 
 PROPERTIES
 Excel : POW(TUPLETYPE) & /* Typing */
 Excel = { /* the Data */
-("Foo Widget", 100.0, "test1", "test2")
-("Bar Widget", 200.0)
+("Foo Widget", 100, "test1", "test2")
+("Bar Widget", 200)
  }
 Spalte 1 = %(x0,x1,x2,x3,x4).((x0,x1,x2,x3,x4):TUPLETYPE|x0)
 Spalte 2 = %(x0,x1,x2,x3,x4).((x0,x1,x2,x3,x4):TUPLETYPE|x1)

@@ -1,6 +1,9 @@
 (ns table-to-b.core
   (:require [dk.ative.docjure.spreadsheet :as dj]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [stencil.core :as sc]
+            [clojure.string :as st]
+            [clostache.parser :as cs])
   (:import de.be4.classicalb.core.parser.BParser
            de.be4.classicalb.core.parser.exceptions.BException)
   (:gen-class))
@@ -9,6 +12,16 @@
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!"))
+
+(defn test1 "funktioniert" []
+  (sc/render-string "tests:, {{#repo}} {{name}}: {{/repo}}."
+             {:repo [{:name "t1"} {:name "t2"} {:name "t3"}]}))
+
+(defn test2 "wirft fehlermeldung, da es das template nicht findet" []
+  (sc/render-file "templates/test2.mustache" {:name "Welt"}))
+
+(defn test3 "" []
+  (cs/render-resource "templates/test2.mustache" {:name "Michael"}))
 
 (def workbook
   "läd spreadsheet.xlsx"
@@ -47,19 +60,24 @@
   [el]
   (if (= (get-type el) 1)
     (str \" el \")
-    el))
+  (int (dj/read-cell el))))
 
 (defn row-as-tuple
   "Gibt die Daten einer Reihe als Tuple zurück
   angepasst nach Typ mit Anführungszeichen oder ohne"
+  [rowvector]
+  (str "(" (st/join ", " rowvector) ")" \newline))
+
+(defn row-zu-vector
+  "gibt einen Vector zurück, der die Elemente der Row enthält"
   [row]
-  (str "(" (reduce str (interpose ", " (map element row))) ")" \newline))
+  (map element row))
 
 (defn rows-as-tuples
   "bekommt Reihen, gibt einen String wieder, der die Reihen als tuple wiedergibt
   getrennt durch Zeilenumbrueche"
   [rows]
-  (reduce str (map row-as-tuple rows)))
+  (reduce str (map row-as-tuple (map row-zu-vector rows))))
 
 (defn get-cell
   "Gibt den Inhalt der n. Zelle Zeile row wieder"
@@ -68,8 +86,8 @@
 
 (defn types-of-nth-column
   "Gibt die Typen der Zellen der n. Spalte der Tabelle sheet als Zahlen wieder"
-  [n sheet]
-  (map (comp get-type (partial get-cell n)) (dj/row-seq sheet)))
+  [n rows]
+  (map (comp get-type (partial get-cell n)) rows))
 
 (defn haupttyp
   "Gibt den Namen der typen wieder, wenn er bei allen gleich ist,
@@ -84,18 +102,23 @@
   [sheet]
   (count (dj/row-seq sheet)))
 
+(defn anzahl-Spalten
+  "gibt die Anzahl der Zellen der Reihe zurück"
+  [row]
+  (count (map element row)))
+
 (defn haupttypen
   "Gibt die Datentypen der Reihen der Tabelle als list wieder"
-  [sheet]
-  (loop [i (anzahl-Reihen sheet) erg ()]
-    (if (> 0 i)
-      erg
-      (recur (dec i) (conj erg (haupttyp (types-of-nth-column i sheet))) ))))
+  [rows]
+  (loop [i (anzahl-Spalten (first rows)) erg []]
+    (if (> 0 i )
+      (reverse (rest erg))
+      (recur (dec i) (conj erg (haupttyp (types-of-nth-column i (rest rows))))))))
 
 (defn dateibegin
   "Erstellt den Anfang der B-Datei"
   [sheet]
-  (str tupleanfang (reduce str (interpose "*" (haupttypen sheet))) ")" ))
+  (str tupleanfang (reduce str (interpose "*" (haupttypen (dj/row-seq sheet)))) ")" ))
 
 (defn tuple-properties
   "Erstellt den Properties Teil für Tuples"
@@ -162,7 +185,7 @@
   "Erstellt die projection functions für die Recordversion"
   [sheet titles]
   (let [pow (erstelle-zuordnung titles (haupttypen sheet))]
-    (map (partial function-line pow) titles)))
+    (reduce str (map (partial function-line pow) titles))))
 
 (defn erstelle-recordmachine
   "erstellt die Recordversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test1.txt"
@@ -173,8 +196,8 @@
      (str recanfang \newline
      (abstract-constants (first rows)) \newline
      (record-properties sheet titles) \newline
-    "Excel = { /* the Data /*}" \newline
-    (record-data (rest rows) titles)
+    "Excel = { /* the Data */}" \newline
+    (record-data (rest rows) titles) \newline
     (record-functions sheet titles) \newline))))
 
 (defn first-row [dateiname sheetname]
@@ -185,7 +208,9 @@
     (dj/sheet-name (first (dj/sheet-seq workbook)))
     ))
 
-(defn valid-b-identifier? [string]
+(defn valid-b-identifier?
+  "prüft, ob es sich bei dem übergebenen string um einen validen B-Identifier handelt"
+  [string]
   (try
     (do  (BParser/parse (str "#FORMULA " string))
          true)
