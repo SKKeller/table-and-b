@@ -18,7 +18,7 @@
              {:repo [{:name "t1"} {:name "t2"} {:name "t3"}]}))
 
 (defn test2 "wirft fehlermeldung, da es das template nicht findet" []
-  (sc/render-file "templates/test2.mustache" {:name "Welt"}))
+  (sc/render-file  "templates/test2" {:name "Welt"}))
 
 (defn test3 "" []
   (cs/render-resource "templates/test2.mustache" {:name "Michael"}))
