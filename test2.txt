@@ -1,0 +1,21 @@
+MACHINE ExcelTable_RecordVersion
+ABSTRACT_CONSTANTS Spalte_1, Spalte_2, Spalte_3, Spalte_4
+CONSTANTS Excel
+
+PROPERTIES
+Excel : POW(struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)) &
+Excel = { /* the Data */
+  rec(Spalte_1:"Foo Widget",Spalte_2:100,Spalte_3:"test1",Spalte_4:"test2"),
+  rec(Spalte_1:"Bar Widget",Spalte_2:200),
+}
+
+&
+Spalte_1 = %x0.(x0:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x0'Spalte_1)
+&
+Spalte_2 = %x1.(x1:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x1'Spalte_2)
+&
+Spalte_3 = %x2.(x2:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x2'Spalte_3)
+&
+Spalte_4 = %x3.(x3:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x3'Spalte_4)
+
+END

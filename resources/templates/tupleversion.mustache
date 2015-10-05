@@ -1,0 +1,19 @@
+MACHINE ExcelTable_TupleVersion
+DEFINITIONS TUPLETYPE == ({{tupletype}})
+ABSTRACT_CONSTANTS {{titles}}
+CONSTANTS Excel
+
+PROPERTIES
+Excel : POW(TUPLETYPE) & /* Typing */
+Excel = { /* the Data */
+{{#tuples}}
+  ({{{tuple}}})
+{{/tuples}}
+ }
+
+{{#functions}}
+&
+  {{title}} = %(x{{vars}}).((x{{vars}}):TUPLETYPE|x{{id}})
+{{/functions}}
+
+END

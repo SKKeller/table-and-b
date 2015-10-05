@@ -3,22 +3,16 @@ ABSTRACT_CONSTANTS {{titles}}
 CONSTANTS Excel
 
 PROPERTIES
-Excel : POW(struct({{titles:haupttypen}})) &
+Excel : POW(struct({{titles_haupttypen}})) &
 Excel = { /* the Data */
 {{#rec}}
-  rec({{titles_Werte}}),
+  rec({{{titles_Werte}}}),
 {{/rec}}
-rec({{titles:Werte}})
-/* rec(Spalte1:"Foo Widget",Spalte2:"100",Spalte3:"test1",Spalte4:"test2") , 
-rec(Spalte1:"Bar Widget",Spalte2:"200",Spalte3:"",Spalte4:"") */
- }
+}
+
+{{#functions}}
 &
-{{title}} = %{{id}}.({{id}}:struct({{titles:haupttypen}})|{{id}}'{{title}})
-&
-Spalte2 = %x1.(x1:struct(Spalte1:STRING,Spalte2:STRING,Spalte3:STRING,Spalte4:STRING)|x1'Spalte2)
-&
-Spalte3 = %x2.(x2:struct(Spalte1:STRING,Spalte2:STRING,Spalte3:STRING,Spalte4:STRING)|x2'Spalte3)
-&
-Spalte4 = %x3.(x3:struct(Spalte1:STRING,Spalte2:STRING,Spalte3:STRING,Spalte4:STRING)|x3'Spalte4)
+{{title}} = %x{{id}}.(x{{id}}:struct({{titles_haupttypen}})|x{{id}}'{{title}})
+{{/functions}}
 
 END

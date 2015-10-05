@@ -2,8 +2,7 @@
   (:require [dk.ative.docjure.spreadsheet :as dj]
             [clojure.java.io :as io]
             [stencil.core :as sc]
-            [clojure.string :as st]
-            [clostache.parser :as cs])
+            [clojure.string :as st])
   (:import de.be4.classicalb.core.parser.BParser
            de.be4.classicalb.core.parser.exceptions.BException)
   (:gen-class))
@@ -17,11 +16,8 @@
   (sc/render-string "tests:, {{#repo}} {{name}}: {{/repo}}."
              {:repo [{:name "t1"} {:name "t2"} {:name "t3"}]}))
 
-(defn test2 "wirft fehlermeldung, da es das template nicht findet" []
+(defn test2 "funktioniert" []
   (sc/render-file  "templates/test2" {:name "Welt"}))
-
-(defn test3 "" []
-  (cs/render-resource "templates/test2.mustache" {:name "Michael"}))
 
 (def workbook
   "läd spreadsheet.xlsx"
@@ -66,7 +62,7 @@
   "Gibt die Daten einer Reihe als Tuple zurück
   angepasst nach Typ mit Anführungszeichen oder ohne"
   [rowvector]
-  (str "(" (st/join ", " rowvector) ")" \newline))
+  (st/join ", " rowvector))
 
 (defn row-zu-vector
   "gibt einen Vector zurück, der die Elemente der Row enthält"
@@ -115,7 +111,7 @@
       (reverse (rest erg))
       (recur (dec i) (conj erg (haupttyp (types-of-nth-column i (rest rows))))))))
 
-(defn dateibegin
+(defn dateibegin_tuple
   "Erstellt den Anfang der B-Datei"
   [sheet]
   (str tupleanfang (reduce str (interpose "*" (haupttypen (dj/row-seq sheet)))) ")" ))
@@ -148,12 +144,72 @@
   [row]
   (str "ABSTRACT_CONSTANTS " (reduce str (interpose ", " (map dj/read-cell row))) \newline "CONSTANTS Excel" \newline ))
 
+(defn valid-b-identifier?
+  "prüft, ob es sich bei dem übergebenen string um einen validen B-Identifier handelt"
+  [string]
+  (try
+    (do  (BParser/parse (str "#FORMULA " string))
+         true)
+    (catch BException e false)))
+
+(defn pruefe_titel
+  "überprüft, ob es sich bei dem Titel um einen validen B-Identifier handelt,
+  wenn nein, ersetzt alle Leerzeichen durch _ und prüft erneut"
+  [titel]
+  (if (valid-b-identifier? titel)
+    titel
+    (if (valid-b-identifier? (st/replace titel " " "_"))
+      (st/replace titel #" " "_")
+      titel)))
+
+(defn ermittel_titel
+  "prüft für alle Elemente des Vektors, ob es sich um einen gültigen Titel handelt
+  und passt ihn ggf an"
+  [titles]
+  (map pruefe_titel titles))
+
+(defn ermittel_tupletype
+  ""
+  [rows]
+  (st/join "*" (haupttypen rows)))
+
+(defn ermittel_tuples
+  ""
+  [rows]
+  (loop [reihen rows erg []]
+    (if (empty? reihen)
+      erg
+      (recur (rest reihen) (conj erg { :tuple (row-as-tuple (row-zu-vector (first reihen)))})))))
+
+(defn ermittel_tuplefunctions
+  ""
+  [titles rows]
+  (loop [i 0 erg []]
+    (if (= (count titles) i)
+      erg
+      (recur (inc i) (conj erg {:title (nth titles i) :id i})))))
+
+(defn tuplemachine
+  ""
+  [sheet]
+  (let [rows (dj/row-seq sheet)
+        erste_Reihe (map dj/read-cell (first rows))
+        titles (ermittel_titel erste_Reihe)
+        zuordnung (assoc {}
+          :tupletype (ermittel_tupletype rows)
+          :titles (st/join ", " titles)
+          :tuples (ermittel_tuples (rest rows))
+          :functions (ermittel_tuplefunctions titles (rest rows))
+          :vars (st/join ",x" (range 0 (count titles))))]
+        (spit "test3.txt"
+          (sc/render-file "templates/tupleversion" zuordnung))))
+
 (defn erstelle-tuplemachine
   "erstellt die Tupleversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test.txt"
   [sheet]
   (let [rows (dj/row-seq sheet)]
     (spit "test.txt"
-      (str (dateibegin sheet)  \newline
+      (str (dateibegin_tuple sheet)  \newline
       (abstract-constants (first rows)) \newline
       (tuple-properties rows) \newline
       (tuples-functions (first rows))))))
@@ -163,42 +219,35 @@
   [namen werte]
   (subs (reduce str (interleave (repeat ",") namen (repeat ":") werte )) 1))
 
-(defn record-data
-  "Erstellt den Data-Teil der Recordversion"
+(defn titles_werte
+  "Ermittelt die Werte für den titles_Werte tag für das recordversion-Template"
   [rows titles]
-  (reduce str
-    (for [row rows]
-      (str "rec(" (erstelle-zuordnung titles (map element row)) ")" \newline))))
+  (loop [reihen rows erg []]
+    (if (empty? reihen)
+      erg
+      (recur (rest reihen) (conj erg { :titles_Werte (erstelle-zuordnung titles (map element (first reihen)))})))))
 
-(defn record-properties
-  "Erstellt den Properties Teil für Records"
-  [sheet titles]
-  (str "PROPERTIES" \newline "Excel : POW(struct(" (erstelle-zuordnung titles (haupttypen sheet)) "))"))
+(defn title_id
+  "Ermittelt die Werte für den title tag und den id tag für das recordversion-Template"
+  [titles]
+  (loop [i 0 erg []]
+    (if (= (count titles) i)
+      erg
+      (recur (inc i) (conj erg {:title (nth titles i) :id i})))))
 
-(defn function-line
-  "Erstellt die Funktion für Variable var und Zuordnung pow"
-  [pow var]
-  (let [x (gensym "x")]
-    (str "&" \newline var " = %" x ".(" x ":struct(" pow ")|" x "'" var ")" \newline)))
-
-(defn record-functions
-  "Erstellt die projection functions für die Recordversion"
-  [sheet titles]
-  (let [pow (erstelle-zuordnung titles (haupttypen sheet))]
-    (reduce str (map (partial function-line pow) titles))))
-
-(defn erstelle-recordmachine
-  "erstellt die Recordversion einer b-machine aus der angegebenen Tabelle und speichert sie unter test1.txt"
+(defn recordmachine
+  "erstellt die Recordmachine mit Hilfe des templates"
   [sheet]
   (let [rows (dj/row-seq sheet)
-        titles (map dj/read-cell (first rows))]
-    (spit "test1.txt"
-     (str recanfang \newline
-     (abstract-constants (first rows)) \newline
-     (record-properties sheet titles) \newline
-    "Excel = { /* the Data */}" \newline
-    (record-data (rest rows) titles) \newline
-    (record-functions sheet titles) \newline))))
+        erste_Reihe (map dj/read-cell (first rows))
+        titles (ermittel_titel erste_Reihe)
+        zuordnung (assoc {}
+          :titles_haupttypen (erstelle-zuordnung titles (haupttypen rows))
+          :titles (st/join ", " titles)
+          :rec (titles_werte (rest rows) titles)
+          :functions (title_id titles))]
+      (spit "test2.txt"
+      (sc/render-file "templates/recordversion" zuordnung))))
 
 (defn first-row [dateiname sheetname]
   (let [workbook (dj/load-workbook (str dateiname))
@@ -207,11 +256,3 @@
         rows (dj/row-seq sheet)]
     (dj/sheet-name (first (dj/sheet-seq workbook)))
     ))
-
-(defn valid-b-identifier?
-  "prüft, ob es sich bei dem übergebenen string um einen validen B-Identifier handelt"
-  [string]
-  (try
-    (do  (BParser/parse (str "#FORMULA " string))
-         true)
-    (catch BException e false)))
