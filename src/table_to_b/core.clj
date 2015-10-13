@@ -7,11 +7,6 @@
            de.be4.classicalb.core.parser.exceptions.BException)
   (:gen-class))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
-
 (def workbook
   "läd spreadsheet.xlsx"
   (dj/load-workbook "spreadsheet.xlsx"))
@@ -190,3 +185,13 @@
           :functions (functions titles))]
       (spit "test2.txt"
       (sc/render-file "templates/recordversion" zuordnung))))
+
+(defn -main
+  "ruft, je nach Parametern, die Methode zu tuple oder record erstellen auf"
+  [version dateiname s1]
+  (let [wb (dj/load-workbook dateiname)
+        sheet (dj/select-sheet s1 wb)]
+    (if (= version "record")
+      (recordmachine s)
+      (if (= version "tuple")
+        (tuplemachine s)))))

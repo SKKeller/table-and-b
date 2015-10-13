@@ -7,7 +7,7 @@ PROPERTIES
 Excel : POW(TUPLETYPE) & /* Typing */
 Excel = { /* the Data */
   ("Foo Widget", 100, "test1", "test2")
-  ("Bar Widget", 200, " ", " ")
+  ("Bar Widget", 200, "", "")
  }
 
 &
