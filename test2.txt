@@ -10,12 +10,12 @@ Excel = { /* the Data */
 }
 
 &
-Spalte_1 = %x0.(x0:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x0'Spalte_1)
+Spalte_1 = %x2584.(x2584:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x2584'Spalte_1)
 &
-Spalte_2 = %x1.(x1:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x1'Spalte_2)
+Spalte_2 = %x2585.(x2585:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x2585'Spalte_2)
 &
-Spalte_3 = %x2.(x2:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x2'Spalte_3)
+Spalte_3 = %x2586.(x2586:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x2586'Spalte_3)
 &
-Spalte_4 = %x3.(x3:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x3'Spalte_4)
+Spalte_4 = %x2587.(x2587:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x2587'Spalte_4)
 
 END

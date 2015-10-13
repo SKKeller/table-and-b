@@ -8,6 +8,7 @@
                  [dk.ative/docjure "1.9.0"]
                  [stencil "0.5.0"]
                  [midje "1.7.0"]]
+  :plugins [[lein-cloverage "1.0.6"]]
   :main ^:skip-aot table-to-b.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
