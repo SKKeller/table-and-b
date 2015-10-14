@@ -3,19 +3,23 @@ ABSTRACT_CONSTANTS Spalte_1, Spalte_2, Spalte_3, Spalte_4
 CONSTANTS Excel
 
 PROPERTIES
-Excel : POW(struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)) &
+Excel : POW(struct(Spalte_1:STRING,Spalte_2:STRING,Spalte_3:STRING,Spalte_4:STRING)) &
 Excel = { /* the Data */
-  rec(Spalte_1:"Foo Widget",Spalte_2:100,Spalte_3:"test1",Spalte_4:"test2"),
-  rec(Spalte_1:"Bar Widget",Spalte_2:200),
+  rec(Spalte_1:"Foo Widget",Spalte_2:100,Spalte_3:"test2",Spalte_4:TRUE),
+  rec(Spalte_1:"Bar Widget",Spalte_2:200,Spalte_3:"",Spalte_4:FALSE),
+  rec(Spalte_1:"Test1",Spalte_2:"",Spalte_3:"test3",Spalte_4:""),
+  rec(Spalte_1:"Test4",Spalte_2:"",Spalte_3:"",Spalte_4:TRUE),
+  rec(Spalte_1:"Test5",Spalte_2:"",Spalte_3:"test6",Spalte_4:FALSE),
+  rec(Spalte_1:"",Spalte_2:200,Spalte_3:"",Spalte_4:TRUE),
 }
 
 &
-Spalte_1 = %x1417.(x1417:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x1417'Spalte_1)
+Spalte_1 = %x2596.(x2596:struct(Spalte_1:STRING,Spalte_2:STRING,Spalte_3:STRING,Spalte_4:STRING)|x2596'Spalte_1)
 &
-Spalte_2 = %x1418.(x1418:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x1418'Spalte_2)
+Spalte_2 = %x2597.(x2597:struct(Spalte_1:STRING,Spalte_2:STRING,Spalte_3:STRING,Spalte_4:STRING)|x2597'Spalte_2)
 &
-Spalte_3 = %x1419.(x1419:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x1419'Spalte_3)
+Spalte_3 = %x2598.(x2598:struct(Spalte_1:STRING,Spalte_2:STRING,Spalte_3:STRING,Spalte_4:STRING)|x2598'Spalte_3)
 &
-Spalte_4 = %x1420.(x1420:struct(Spalte_1:STRING,Spalte_2:INTEGER,Spalte_3:STRING,Spalte_4:STRING)|x1420'Spalte_4)
+Spalte_4 = %x2599.(x2599:struct(Spalte_1:STRING,Spalte_2:STRING,Spalte_3:STRING,Spalte_4:STRING)|x2599'Spalte_4)
 
 END

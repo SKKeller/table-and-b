@@ -39,20 +39,23 @@
         (str \" el \")
         (if (= typ 0)
           (int (dj/read-cell el))
-          el))))
+          (str el)))))
+
+(defn wert
+  "Gibt den Wert der angegebenen Zelle wieder und wenn sie leer ist, \"\""
+  [row i]
+  (if (nil? (.getCell row i))
+    "\"\""
+    (element (.getCell row i))))
 
 (defn row-as-tuple
   "Gibt die Daten einer Reihe als Tuple zurück
   angepasst nach Typ mit Anführungszeichen oder ohne"
-  [row x]
-  (let [elemente (st/join ", " (map element row))
-        n (count (map element row))]
-    (if (< n x)
-      (loop [i 0 erg elemente]
-        (if (<= (- x n) i)
-          erg
-          (recur (inc i) (str erg ", \"\""))))
-      elemente)))
+  [row anz]
+  (loop [i 0 reihe row erg []]
+    (if (<= anz i)
+      erg
+      (recur (inc i) (rest reihe) (conj erg (wert row i))))))
 
 (defn get-cell
   "Gibt den Inhalt der n. Zelle Zeile row wieder"
@@ -118,7 +121,7 @@
   [rows n]
   (into []
     (for [row rows]
-      {:tuple (row-as-tuple row n)})))
+      {:tuple (st/join ", " (row-as-tuple row n))})))
 
 (defn tuplefunctions
   ""
@@ -155,7 +158,7 @@
   [rows titles]
   (into []
     (for [row rows]
-      { :titles_Werte (zuordnung titles (map element row)) } )))
+      { :titles_Werte (zuordnung titles (row-as-tuple row (count titles))) } )))
 
 (defn functions
   "Gehört zur recordversion,
