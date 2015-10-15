@@ -7,17 +7,18 @@
            de.be4.classicalb.core.parser.exceptions.BException)
   (:gen-class))
 
-(def workbook
+(comment 
+  (def workbook
   "läd spreadsheet.xlsx"
   (dj/load-workbook "spreadsheet.xlsx"))
 
-(def s
+  (def s
   "tabelle Price List"
-  (dj/select-sheet "Price List" workbook))
+  (dj/select-sheet "Price List" workbook)))
 
 (def datatype
   "Zuordnung Datentypnr -> Bezeichnung"
-  {:0 "INTEGER" :1 "STRING" :2 "Formula" :3 "Blank" :4 "BOOLEAN" :5 "Error"})
+  {:0 "INTEGER" :1 "STRING" :2 "Formula" :3 "Blank" :4 "BOOL" :5 "Error"})
 
 (defn get-datatype
   "ordnet der Typnummer den Datentyp zu"
@@ -144,8 +145,7 @@
           :tuples (tuples data (count titles))
           :functions (tuplefunctions titles data)
           :vars (st/join ",x" (range 0 (count titles))))]
-        (spit "test3.txt"
-          (sc/render-file "templates/tupleversion" zuordnung))))
+    zuordnung))
 
 (defn zuordnung
   "Erstellt eine Zuordnung vom Muster name1:wert1,name2:wert2..."
@@ -186,15 +186,31 @@
           :titles (st/join ", " titles)
           :rec (rec data titles)
           :functions (functions titles))]
-      (spit "test2.txt"
-      (sc/render-file "templates/recordversion" zuordnung))))
+    zuordnung))
+
+(defn render-to-file! [zuordnung template filename]
+  (spit filename
+        (sc/render-file (str "templates/" template) zuordnung)))
+
+(defmulti foo (fn [a b _] [a (count b)]))
+(defmethod foo [:test 3] [a b c] (println a))
+(defmethod foo [:test 4] [a b c](println b))
+(defmethod foo [:bar 3] [a b c](println c))
+
+(def usage "java -jar foobar.jar [record|tuple] Excelfile Sheet-Name Target-B-Filename")
+
+(defmulti create (fn [version _] (keyword version)))
+(defmethod create :tuple [_ sheet] (tuplemachine sheet))
+(defmethod create :record [_ sheet] (recordmachine sheet))
+(defmethod create :default [_ sheet] (println usage))
+
 
 (defn -main
   "ruft, je nach Parametern, die Methode zu tuple oder record erstellen auf"
-  [version dateiname s1]
+  [version dateiname s1 machinefile]
   (let [wb (dj/load-workbook dateiname)
         sheet (dj/select-sheet s1 wb)]
-    (if (= version "record")
-      (recordmachine s)
-      (if (= version "tuple")
-        (tuplemachine s)))))
+    (cond
+      (= version "record") (-> sheet recordmachine (render-to-file! "recordversion" machinefile))
+      (= version "tuple") (-> sheet tuplemachine (render-to-file! "tupleversion" machinefile))
+      :otherwise (println usage))))
